@@ -7,6 +7,7 @@ import { welcomeEmailTemplate } from "./templates/welcome-email";
 import { workspaceInvitationTemplate } from "./templates/workspace-invitation";
 import { emailVerificationTemplate } from "./templates/email-verification";
 import { passwordResetTemplate } from "./templates/password-reset";
+import { magicLinkTemplate } from "./templates/magic-link";
 
 /**
  * Type-safe email template registry
@@ -27,6 +28,7 @@ export const emailTemplates: EmailTemplateRegistry = {
   [EmailTemplateId.WORKSPACE_INVITATION]: workspaceInvitationTemplate,
   [EmailTemplateId.EMAIL_VERIFICATION]: emailVerificationTemplate,
   [EmailTemplateId.PASSWORD_RESET]: passwordResetTemplate,
+  [EmailTemplateId.MAGIC_LINK]: magicLinkTemplate,
 };
 
 /**

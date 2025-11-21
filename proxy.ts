@@ -20,7 +20,7 @@ export async function proxy(request: NextRequest) {
   // Actual authentication verification happens in server components
   if (!sessionCookie) {
     // Protected routes that require authentication
-    const protectedPaths = ["/dashboard"];
+    const protectedPaths = ["/dashboard", "/admin", "/onboarding"];
 
     const isProtectedPath = protectedPaths.some((path) =>
       pathname.startsWith(path)
@@ -37,6 +37,8 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/admin/:path*",
+    "/onboarding",
     "/settings/:path*",
     "/app-ideas/:path*",
     "/sign-in",

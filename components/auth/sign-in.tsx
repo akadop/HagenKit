@@ -3,10 +3,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { useMemo, useState } from "react";
 import { authClient, signIn } from "@/lib/auth-client";
+import { toast } from "sonner";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -100,97 +103,172 @@ export default function SignInAuth() {
               )}
             </div>
             <div className="grid gap-6">
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  await signIn.email(
-                    {
-                      email,
-                      password,
-                      callbackURL,
-                      rememberMe,
-                    },
-                    {
-                      onRequest: () => {
-                        setLoading(true);
-                      },
-                      onResponse: () => {
-                        setLoading(false);
-                      },
-                    }
-                  );
-                }}
-              >
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="name@example.com"
-                      required
-                      onChange={(e) => setEmail(e.target.value)}
-                      value={email}
-                      disabled={loading}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="flex items-center">
-                      <Label htmlFor="password">Password</Label>
-                      <Link
-                        href="/forgot-password"
-                        className="ml-auto inline-block text-sm underline"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="remember"
-                      checked={rememberMe}
-                      onCheckedChange={(checked) =>
-                        setRememberMe(checked as boolean)
-                      }
-                    />
-                    <label
-                      htmlFor="remember"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Remember me
-                    </label>
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full justify-center"
-                    variant={emailVariant}
-                    disabled={loading}
+              <Tabs defaultValue="password" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="password">Login</TabsTrigger>
+                  <TabsTrigger value="magic-link">Magic Link</TabsTrigger>
+                </TabsList>
+                <TabsContent value="password">
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      await signIn.email(
+                        {
+                          email,
+                          password,
+                          callbackURL,
+                          rememberMe,
+                        },
+                        {
+                          onRequest: () => {
+                            setLoading(true);
+                          },
+                          onResponse: () => {
+                            setLoading(false);
+                          },
+                          onError: (ctx) => {
+                            setLoading(false);
+                            toast.error(ctx.error.message);
+                          },
+                        }
+                      );
+                    }}
                   >
-                    {loading && (
-                      <Spinner className="mr-2 size-4" aria-hidden="true" />
-                    )}
-                    <span>Sign in</span>
-                    {emailIsLast && (
-                      <>
-                        <Badge className="ml-2" variant="secondary">
-                          Last used
-                        </Badge>
-                        <span className="sr-only">Last used login method</span>
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="email-password">Email</Label>
+                        <Input
+                          id="email-password"
+                          type="email"
+                          placeholder="name@example.com"
+                          required
+                          onChange={(e) => setEmail(e.target.value)}
+                          value={email}
+                          disabled={loading}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <div className="flex items-center">
+                          <Label htmlFor="password">Password</Label>
+                          <Link
+                            href="/forgot-password"
+                            className="ml-auto inline-block text-sm underline"
+                          >
+                            Forgot password?
+                          </Link>
+                        </div>
+                        <Input
+                          id="password"
+                          type="password"
+                          placeholder="••••••••"
+                          autoComplete="current-password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          disabled={loading}
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="remember"
+                          checked={rememberMe}
+                          onCheckedChange={(checked) =>
+                            setRememberMe(checked as boolean)
+                          }
+                        />
+                        <label
+                          htmlFor="remember"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Remember me
+                        </label>
+                      </div>
+                      <Button
+                        type="submit"
+                        className="w-full justify-center"
+                        variant={emailVariant}
+                        disabled={loading}
+                      >
+                        {loading && (
+                          <Spinner className="mr-2 size-4" aria-hidden="true" />
+                        )}
+                        <span>Sign in with Password</span>
+                        {emailIsLast && (
+                          <>
+                            <Badge className="ml-2" variant="secondary">
+                              Last used
+                            </Badge>
+                            <span className="sr-only">Last used login method</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </TabsContent>
+                <TabsContent value="magic-link">
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      await signIn.magicLink(
+                        {
+                          email,
+                          callbackURL,
+                        },
+                        {
+                          onRequest: () => {
+                            setLoading(true);
+                          },
+                          onResponse: () => {
+                            setLoading(false);
+                          },
+                          onSuccess: () => {
+                            setLoading(false);
+                            toast.success("Check your email for the magic link!");
+                          },
+                          onError: (ctx) => {
+                            setLoading(false);
+                            toast.error(ctx.error.message);
+                          },
+                        }
+                      );
+                    }}
+                  >
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="email-magic">Email</Label>
+                        <Input
+                          id="email-magic"
+                          type="email"
+                          placeholder="name@example.com"
+                          required
+                          onChange={(e) => setEmail(e.target.value)}
+                          value={email}
+                          disabled={loading}
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        className="w-full justify-center"
+                        variant={emailVariant}
+                        disabled={loading}
+                      >
+                        {loading && (
+                          <Spinner className="mr-2 size-4" aria-hidden="true" />
+                        )}
+                        <span>Sign in with Magic Link</span>
+                        {emailIsLast && (
+                          <>
+                            <Badge className="ml-2" variant="secondary">
+                              Last used
+                            </Badge>
+                            <span className="sr-only">Last used login method</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </TabsContent>
+              </Tabs>
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />

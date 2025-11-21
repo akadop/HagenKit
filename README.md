@@ -73,10 +73,28 @@ Start the development server with Turbopack:
 pnpm dev
 ```
 
-Optional workflows:
-
 - `pnpm email` – launch the React Email preview server.
 - `pnpm lint` – run ESLint with the project config.
+
+## Magic Link Setup
+
+HagenKit supports Magic Link authentication out of the box.
+
+### Development
+For a seamless developer experience, if you do not provide a `RESEND_API_KEY` in your `.env.local` file while in development mode, **emails will be logged to your terminal console**.
+
+1.  Go to the Sign In page.
+2.  Enter your email and click "Sign in with Magic Link".
+3.  Check your terminal where `pnpm dev` is running.
+4.  Click the link printed in the console to sign in.
+
+### Production
+For production, you must set up Resend:
+
+1.  Create an account at [Resend](https://resend.com).
+2.  Get your API Key.
+3.  Add `RESEND_API_KEY` to your environment variables.
+4.  Verify your domain in Resend to ensure emails are delivered reliably.
 
 ## ⚠️ Security: First User Setup
 

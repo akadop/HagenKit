@@ -13,10 +13,16 @@ import type {
  * Initialize Resend client
  * Throws error if RESEND_API_KEY is not set
  */
-function getResendClient(): Resend {
+function getResendClient(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "RESEND_API_KEY is not set. Emails will be logged to console."
+      );
+      return null;
+    }
     throw new Error(
       "RESEND_API_KEY environment variable is not set. Please add it to your .env.local file."
     );
@@ -61,6 +67,36 @@ export async function sendTemplateEmail<T extends EmailTemplateId>(
 
     // Render the React component to HTML
     const html = await render(component);
+
+    if (!resend) {
+      console.log(`
+=================================================================
+[DEV MODE] Email Mock Send
+=================================================================
+To: ${Array.isArray(options.to) ? options.to.join(", ") : options.to}
+Subject: ${subject}
+Template: ${templateId}
+-----------------------------------------------------------------
+HTML Content (Preview):
+${html.substring(0, 500)}...
+-----------------------------------------------------------------
+Full HTML content logged above.
+In a real scenario, this would be sent via Resend.
+=================================================================
+      `);
+      
+      // If it's a magic link, try to extract and log the link specifically for easier access
+      if (templateId === "magic-link" && (data as any).magicLinkUrl) {
+        console.log(`
+>>> MAGIC LINK URL: ${(data as any).magicLinkUrl}
+        `);
+      }
+
+      return {
+        id: "mock-email-id-" + Date.now(),
+        success: true,
+      };
+    }
 
     // Send the email
     const result = await resend.emails.send({
@@ -128,6 +164,28 @@ export async function sendCustomEmail(
 ): Promise<SendEmailResult> {
   try {
     const resend = getResendClient();
+
+    if (!resend) {
+      console.log(`
+=================================================================
+[DEV MODE] Custom Email Mock Send
+=================================================================
+To: ${Array.isArray(options.to) ? options.to.join(", ") : options.to}
+Subject: ${subject}
+-----------------------------------------------------------------
+HTML Content (Preview):
+${html.substring(0, 500)}...
+-----------------------------------------------------------------
+Full HTML content logged above.
+In a real scenario, this would be sent via Resend.
+=================================================================
+      `);
+
+      return {
+        id: "mock-email-id-" + Date.now(),
+        success: true,
+      };
+    }
 
     const result = await resend.emails.send({
       from: options.from || DEFAULT_FROM_EMAIL,

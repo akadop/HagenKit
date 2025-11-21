@@ -205,6 +205,48 @@ export async function sendPasswordResetEmail(
 }
 
 /**
+ * Send magic link email
+ *
+ * @param data - Magic link template data
+ * @param to - Recipient email address
+ * @returns Promise with action result containing email ID
+ */
+export async function sendMagicLinkEmail(
+  data: EmailTemplateData[EmailTemplateId.MAGIC_LINK],
+  to: string
+): Promise<ActionResult<{ emailId: string }>> {
+  // Note: Magic link emails should be sent without authentication
+  // since the user may be logged out
+  if (!isValidEmail(to)) {
+    return { success: false, error: "Invalid email address" };
+  }
+
+  try {
+    const result = await sendTemplateEmail(
+      EmailTemplateId.MAGIC_LINK,
+      data,
+      { to }
+    );
+
+    if (!result.success) {
+      return { success: false, error: result.error };
+    }
+
+    return {
+      success: true,
+      data: { emailId: result.id },
+    };
+  } catch (error) {
+    console.error("Failed to send magic link email:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to send magic link email",
+    };
+  }
+}
+
+/**
  * Generic function to send any email template
  * Requires authentication for security
  *
