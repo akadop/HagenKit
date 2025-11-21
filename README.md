@@ -96,42 +96,15 @@ For production, you must set up Resend:
 3.  Add `RESEND_API_KEY` to your environment variables.
 4.  Verify your domain in Resend to ensure emails are delivered reliably.
 
-## ⚠️ Security: First User Setup
+## 🛡️ Security: First User Setup
 
-**IMPORTANT:** For development convenience, the default user role is set to `SUPERADMIN`. This allows your first user to access the admin panel immediately.
+**Automatic Admin Assignment:**
+HagenKit automatically assigns the `admin` role to the **first user** who signs up. This ensures you have immediate access to the admin panel without any manual database manipulation.
 
-**⚠️ BEFORE PRODUCTION DEPLOYMENT:**
+1.  **First Sign-Up**: The first user created in the system will be granted the `admin` role.
+2.  **Subsequent Users**: All users signing up after the first one will be assigned the default `user` role.
 
-1. **After creating your first admin user**, update the default role to `USER`:
-
-```prisma
-// prisma/schema.prisma
-model User {
-  // ...
-  role UserRole @default(USER)  // Change from SUPERADMIN to USER
-}
-```
-
-2. **Also update the validation schema**:
-
-```typescript
-// lib/validations/user.ts
-export const createUserSchema = z.object({
-  // ...
-  role: userRoleEnum.optional().default("USER"),  // Change from SUPERADMIN
-});
-```
-
-3. **Run Prisma migration**:
-
-```bash
-pnpm prisma:generate
-pnpm prisma:migrate dev --name change-default-role-to-user
-```
-
-**Why this matters:** Leaving `SUPERADMIN` as the default means every new user gets admin access, which is a critical security vulnerability. After your first admin user is created, change the default to `USER` to ensure proper access control.
-
-**Alternative approach:** Implement a "first-user setup wizard" that automatically changes the default after the initial account is created.
+**No manual schema changes or migrations are required.** The system handles this logic securely via database hooks.
 
 ## Tech Stack + Features
 

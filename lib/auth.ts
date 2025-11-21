@@ -15,6 +15,24 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          const userCount = await prisma.user.count();
+          if (userCount === 0) {
+            return {
+              data: {
+                ...user,
+                role: "admin",
+              },
+            };
+          }
+          return { data: user };
+        },
+      },
+    },
+  },
   user: {
     additionalFields: {
       role: {
