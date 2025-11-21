@@ -336,8 +336,8 @@ export async function acceptInvitation(
       return { success: false, error: "User not found" };
     }
 
-    // Check if invitation email matches user email
-    if (user.email !== invitation.email) {
+    // Check if invitation email matches user email (case-insensitive)
+    if (user.email.toLowerCase() !== invitation.email.toLowerCase()) {
       return {
         success: false,
         error: "This invitation was sent to a different email address",

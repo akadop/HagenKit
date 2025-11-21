@@ -21,9 +21,9 @@ export default async function AcceptInvitationPage({
   const user = await getCurrentUser();
 
   if (!user) {
-    // Redirect to sign-in with callback URL to return here after login
+    // Redirect to sign-up with callback URL to return here after login
     const callbackUrl = encodeURIComponent(`/accept-invitation?token=${token}`);
-    redirect(`/sign-in?callbackUrl=${callbackUrl}`);
+    redirect(`/sign-up?callbackUrl=${callbackUrl}`);
   }
 
   // User is authenticated, render client component to handle acceptance

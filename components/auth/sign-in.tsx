@@ -48,6 +48,12 @@ export default function SignInAuth() {
       ? rawCallbackUrl
       : "/dashboard";
 
+  const isInvitation = rawCallbackUrl?.includes("accept-invitation");
+
+  const signUpUrl = rawCallbackUrl
+    ? `/sign-up?callbackUrl=${encodeURIComponent(rawCallbackUrl)}`
+    : "/sign-up";
+
   const lastMethod = useMemo(() => authClient.getLastUsedLoginMethod(), []);
   const formattedMethod = formatLoginMethod(lastMethod);
   const hasLastMethod = Boolean(lastMethod);
@@ -60,7 +66,7 @@ export default function SignInAuth() {
     <>
       <div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
         <Link
-          href="/sign-up"
+          href={signUpUrl}
           className={cn(
             buttonVariants({ variant: "ghost" }),
             "absolute right-4 top-4 md:right-8 md:top-8"
@@ -96,7 +102,12 @@ export default function SignInAuth() {
               <p className="text-sm text-muted-foreground">
                 Enter your email below to sign in
               </p>
-              {formattedMethod && (
+              {isInvitation && (
+                <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                  Please sign in to accept your invitation.
+                </div>
+              )}
+              {formattedMethod && !isInvitation && (
                 <p className="text-xs text-muted-foreground" aria-live="polite">
                   Last signed in with {formattedMethod}.
                 </p>

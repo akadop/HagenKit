@@ -12,7 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
 import { IconInnerShadowTop } from "@tabler/icons-react";
 import { buttonVariants } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 function formatLoginMethod(method: string | null) {
   if (!method) {
@@ -35,6 +35,21 @@ export default function SignUpAuth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Extract callbackURL from query parameters
+  const searchParams = useSearchParams();
+  const rawCallbackUrl = searchParams.get("callbackUrl");
+  const callbackURL =
+    rawCallbackUrl && rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//")
+      ? rawCallbackUrl
+      : "/onboarding";
+
+  const isInvitation = rawCallbackUrl?.includes("accept-invitation");
+
+  const signInUrl = rawCallbackUrl
+    ? `/sign-in?callbackUrl=${encodeURIComponent(rawCallbackUrl)}`
+    : "/sign-in";
+
   const lastMethod = useMemo(() => authClient.getLastUsedLoginMethod(), []);
   const formattedMethod = formatLoginMethod(lastMethod);
   const hasLastMethod = Boolean(lastMethod);
@@ -47,7 +62,7 @@ export default function SignUpAuth() {
     <>
       <div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
         <Link
-          href="/sign-in"
+          href={signInUrl}
           className={cn(
             buttonVariants({ variant: "ghost" }),
             "absolute right-4 top-4 md:right-8 md:top-8"
@@ -83,7 +98,12 @@ export default function SignUpAuth() {
               <p className="text-sm text-muted-foreground">
                 Enter your email below to create your account
               </p>
-              {formattedMethod && (
+              {isInvitation && (
+                <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                  Create an account to accept your invitation.
+                </div>
+              )}
+              {formattedMethod && !isInvitation && (
                 <p className="text-xs text-muted-foreground" aria-live="polite">
                   Last signed in with {formattedMethod}.
                 </p>
@@ -97,7 +117,7 @@ export default function SignUpAuth() {
                     email,
                     password,
                     name,
-                    callbackURL: "/onboarding",
+                    callbackURL,
                     fetchOptions: {
                       onResponse: () => {
                         setLoading(false);
@@ -106,7 +126,7 @@ export default function SignUpAuth() {
                         setLoading(true);
                       },
                       onSuccess: () => {
-                        router.push("/onboarding");
+                        router.push(callbackURL);
                       },
                       onError: (ctx) => {
                         toast.error(ctx.error.message);
@@ -191,7 +211,7 @@ export default function SignUpAuth() {
                   await signIn.social(
                     {
                       provider: "google",
-                      callbackURL: "/onboarding",
+                      callbackURL,
                     },
                     {
                       onRequest: () => {
