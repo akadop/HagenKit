@@ -48,14 +48,17 @@ async function testPolarConnection() {
     });
 
     // Test connection by listing products
-    const products = await client.products.list({
+    const productsIterator = await client.products.list({
       organizationId: process.env.POLAR_ORG_ID,
     });
 
-    console.log(`✅ Successfully connected to Polar ${process.env.POLAR_SERVER} API`);
-    console.log(`📦 Found ${products.items?.length || 0} products\n`);
+    // Get first page to test connection
+    const firstPage = await productsIterator.next();
     
-    return { client, products };
+    console.log(`✅ Successfully connected to Polar ${process.env.POLAR_SERVER} API`);
+    console.log(`📦 Found products in organization\n`);
+    
+    return { client };
   } catch (error: any) {
     console.error("❌ Failed to connect to Polar API");
     console.error("Error:", error.message);
@@ -67,47 +70,50 @@ async function listProducts(client: Polar) {
   console.log("📋 Listing available products...\n");
   
   try {
-    const products = await client.products.list({
+    const productsIterator = await client.products.list({
       organizationId: process.env.POLAR_ORG_ID,
     });
 
-    if (!products.items || products.items.length === 0) {
-      console.log("⚠️  No products found. Create some in your Polar dashboard first.");
-      return;
+    const allProducts = [];
+    for await (const product of productsIterator) {
+      allProducts.push(product);
     }
 
-    products.items.forEach((product, index) => {
+    if (allProducts.length === 0) {
+      console.log("⚠️  No products found. Create some in your Polar dashboard first.");
+      return [];
+    }
+
+    allProducts.forEach((product: any, index: number) => {
       console.log(`${index + 1}. ${product.name}`);
       console.log(`   ID: ${product.id}`);
       console.log(`   Type: ${product.type || 'N/A'}`);
       console.log(`   Status: ${product.isArchived ? 'Archived' : 'Active'}`);
       console.log("");
     });
+    
+    return allProducts;
   } catch (error: any) {
     console.error("❌ Failed to list products");
     console.error("Error:", error.message);
+    return [];
   }
 }
 
-async function testCheckoutCreation(client: Polar) {
+async function testCheckoutCreation(client: Polar, products: any[]) {
   console.log("🛒 Testing checkout session creation...\n");
   
   try {
-    // Get first product for testing
-    const products = await client.products.list({
-      organizationId: process.env.POLAR_ORG_ID,
-    });
-
-    if (!products.items || products.items.length === 0) {
+    if (products.length === 0) {
       console.log("⚠️  Skipping checkout test - no products available");
       return;
     }
 
-    const testProduct = products.items[0];
+    const testProduct = products[0];
     console.log(`Using product: ${testProduct.name} (${testProduct.id})`);
 
-    const checkout = await client.checkouts.custom.create({
-      productId: testProduct.id,
+    const checkout = await client.checkouts.create({
+      products: [testProduct.id],
       successUrl: "http://localhost:3000/dashboard/billing?success=true",
     });
 
@@ -144,10 +150,10 @@ async function main() {
   const { client } = result;
 
   // List products
-  await listProducts(client);
+  const products = await listProducts(client);
 
   // Test checkout creation
-  await testCheckoutCreation(client);
+  await testCheckoutCreation(client, products);
 
   console.log("╔════════════════════════════════════════╗");
   console.log("║   ✅ All tests completed!              ║");
