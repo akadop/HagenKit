@@ -1,0 +1,145 @@
+---
+title: Integrating Polar Payments with HagenKit
+updatedAt: 2025-11-24
+summary: Learn how to set up Polar payments in HagenKit using the Better Auth plugin for seamless checkout and subscription management.
+author: codehagen
+categories:
+  - integrations
+  - billing
+  - getting-started
+related:
+  - what-is-hagenkit
+slug: polar-integration
+---
+
+HagenKit comes with built-in support for Polar payments through the Better Auth plugin, allowing you to accept payments and manage subscriptions with minimal configuration.
+
+<Note variant="info">
+  The Polar integration is powered by `@polar-sh/better-auth`, which seamlessly
+  integrates with HagenKit's authentication system for automatic customer creation
+  and subscription management.
+</Note>
+
+## What is Polar?
+
+Polar is a developer-first payment infrastructure that provides checkout, subscriptions, and customer management out of the box. It's designed to make payment integration simple and straightforward.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- A Polar account (sign up at [polar.sh](https://polar.sh))
+- Your Polar Organization Access Token
+- Products created in your Polar dashboard
+
+## Step 1: Get Your Polar Credentials
+
+1. Log in to your Polar dashboard
+2. Navigate to **Organization Settings** → **Access Tokens**
+3. Create a new Organization Access Token with the required scopes
+4. Copy your token and organization ID
+
+<Note variant="warning">
+  For development, use Polar's Sandbox environment. Remember that access tokens,
+  products, and data are completely separated between Production and Sandbox.
+</Note>
+
+## Step 2: Configure Environment Variables
+
+Add the following variables to your `.env` file:
+
+```bash
+POLAR_ACCESS_TOKEN="your_organization_access_token"
+POLAR_WEBHOOK_SECRET="your_webhook_secret"
+POLAR_SERVER="sandbox" # or "production"
+```
+
+## Step 3: Set Up Your Products
+
+1. In your Polar dashboard, navigate to **Products** → **Catalogue**
+2. Create your subscription products
+3. Copy the Product IDs for each product
+4. Update `config/plans.ts` with your Product IDs:
+
+```typescript
+export const PLANS = [
+  {
+    id: "pro-monthly",
+    name: "Pro",
+    description: "For growing teams and businesses.",
+    polarProductId: "your_polar_product_id_here",
+    // ... other plan details
+  },
+];
+```
+
+## Step 4: Configure Webhooks
+
+Webhooks are handled automatically by the Better Auth Polar plugin.
+
+1. In your Polar dashboard, go to **Settings** → **Webhooks**
+2. Add a new webhook endpoint:
+   - **Development**: `https://your-ngrok-url.ngrok.io/api/auth/webhook/polar`
+   - **Production**: `https://your-domain.com/api/auth/webhook/polar`
+3. Copy the webhook secret and add it to your `.env` file
+
+<Note variant="info">
+  For local development, use [ngrok](https://ngrok.com) or a similar tool to
+  expose your local server to the internet.
+</Note>
+
+## How It Works
+
+### Automatic Customer Creation
+
+When a user signs up in HagenKit, the Polar plugin automatically creates a corresponding customer in Polar with the user's email. This happens seamlessly in the background.
+
+### Checkout Flow
+
+Users can initiate checkout directly from your app:
+
+```typescript
+await authClient.checkout({
+  products: ["your_product_id"],
+  referenceId: workspaceId, // Optional: for organization support
+});
+```
+
+### Customer Portal
+
+Users can manage their subscriptions through the Polar Customer Portal:
+
+```typescript
+await authClient.customer.portal();
+```
+
+### Subscription Status
+
+Check a user's subscription status:
+
+```typescript
+const { data: subscriptions } = await authClient.customer.subscriptions.list();
+const isSubscribed = subscriptions.some((sub) => sub.status === "active");
+```
+
+## Testing Your Integration
+
+1. Set `POLAR_SERVER="sandbox"` in your `.env`
+2. Start your development server: `pnpm dev`
+3. Navigate to the pricing page
+4. Click "Get started" on a plan
+5. Complete the checkout in Polar's sandbox
+6. Verify the redirect back to your app
+7. Check the subscription status in the billing page
+
+## Additional Resources
+
+- [Polar Documentation](https://docs.polar.sh)
+- [Polar Better Auth Plugin](https://docs.polar.sh/integrate/better-auth)
+- [Billing Integration Guide](/docs/billing-integration-guide.md)
+
+<Note variant="tip">
+  For more advanced configurations like usage-based billing, custom benefits, or
+  organization support, check out the [billing integration
+  guide](https://github.com/your-org/hagenkit/blob/main/docs/billing-integration-guide.md).
+</Note>

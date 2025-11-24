@@ -4,6 +4,8 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { admin, magicLink } from "better-auth/plugins";
+import { polar, checkout, portal, webhooks } from "@polar-sh/better-auth";
+import { Polar } from "@polar-sh/sdk";
 import { sendPasswordResetEmail, sendMagicLinkEmail } from "@/app/actions/email";
 
 const adapter = new PrismaPg({
@@ -80,6 +82,23 @@ export const auth = betterAuth({
           email
         );
       },
+    }),
+    polar({
+      client: new Polar({
+        accessToken: process.env.POLAR_ACCESS_TOKEN,
+        server: process.env.POLAR_SERVER === "production" ? "production" : "sandbox",
+      }),
+      createCustomerOnSignUp: true,
+      use: [
+        checkout({
+          successUrl: "/dashboard/billing?success=true",
+          authenticatedUsersOnly: true,
+        }),
+        portal(),
+        webhooks({
+          secret: process.env.POLAR_WEBHOOK_SECRET || "",
+        }),
+      ],
     }),
   ],
 });

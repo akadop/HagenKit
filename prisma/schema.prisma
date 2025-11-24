@@ -110,6 +110,12 @@ model Workspace {
   sessions    Session[]
   defaultForUsers User[] @relation("UserDefaultWorkspace")
 
+  // Billing
+  polarCustomerId  String?
+  stripeCustomerId String?
+  subscriptionId   String?
+  subscriptionStatus String? // active, past_due, canceled, etc.
+
   @@map("workspace")
 }
 
