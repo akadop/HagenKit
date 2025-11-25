@@ -1,6 +1,6 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
+import { billingService, BillingNotEnabledError } from "@/lib/billing";
 import { Button } from "@/components/ui/button";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -13,13 +13,27 @@ interface PortalButtonProps {
 
 export function PortalButton({ children, className, variant = "outline" }: PortalButtonProps) {
   const [isPending, startTransition] = useTransition();
+  const isEnabled = billingService.isEnabled();
 
   const handlePortal = () => {
+    if (!isEnabled) {
+      toast.error("Billing is not configured. Please contact support.");
+      return;
+    }
+
     startTransition(async () => {
       try {
-        await authClient.customer.portal();
+        await billingService.portal();
       } catch (error) {
-        toast.error("Something went wrong. Please try again.");
+        console.error("Portal error:", error);
+
+        if (error instanceof BillingNotEnabledError) {
+          toast.error("Billing is not configured. Please contact support.");
+        } else if (error instanceof Error) {
+          toast.error(error.message || "Failed to access billing portal. Please try again.");
+        } else {
+          toast.error("Something went wrong. Please try again.");
+        }
       }
     });
   };
@@ -27,12 +41,12 @@ export function PortalButton({ children, className, variant = "outline" }: Porta
   return (
     <Button
       onClick={handlePortal}
-      disabled={isPending}
+      disabled={isPending || !isEnabled}
       className={className}
       variant={variant}
       aria-busy={isPending}
     >
-      {isPending ? "Loading..." : children || "Manage Billing"}
+      {isPending ? "Loading…" : children || "Manage Billing"}
     </Button>
   );
 }

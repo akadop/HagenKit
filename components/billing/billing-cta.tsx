@@ -1,12 +1,12 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
+import { billingService, BillingNotEnabledError } from "@/lib/billing";
 import { Button } from "@/components/ui/button";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
 interface BillingCTAProps {
-  planId: string; // This should be the Polar Product ID or slug if configured
+  planId: string; // This should be the Product ID from your billing provider
   children?: React.ReactNode;
   className?: string;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
@@ -15,16 +15,35 @@ interface BillingCTAProps {
 
 export function BillingCTA({ planId, children, className, variant = "default", workspaceId }: BillingCTAProps) {
   const [isPending, startTransition] = useTransition();
+  const isEnabled = billingService.isEnabled();
 
   const handleCheckout = () => {
+    if (!isEnabled) {
+      toast.error("Billing is not configured. Please contact support.");
+      return;
+    }
+
+    if (!planId) {
+      toast.error("Invalid plan selected. Please try again.");
+      return;
+    }
+
     startTransition(async () => {
       try {
-        await authClient.checkout({
+        await billingService.checkout({
           products: [planId],
-          referenceId: workspaceId, // Pass workspace ID as reference if needed
+          referenceId: workspaceId,
         });
       } catch (error) {
-        toast.error("Something went wrong. Please try again.");
+        console.error("Checkout error:", error);
+
+        if (error instanceof BillingNotEnabledError) {
+          toast.error("Billing is not configured. Please contact support.");
+        } else if (error instanceof Error) {
+          toast.error(error.message || "Failed to start checkout. Please try again.");
+        } else {
+          toast.error("Something went wrong. Please try again.");
+        }
       }
     });
   };
@@ -32,12 +51,12 @@ export function BillingCTA({ planId, children, className, variant = "default", w
   return (
     <Button
       onClick={handleCheckout}
-      disabled={isPending}
+      disabled={isPending || !isEnabled || !planId}
       className={className}
       variant={variant}
       aria-busy={isPending}
     >
-      {isPending ? "Loading..." : children || "Upgrade"}
+      {isPending ? "Loading…" : children || "Upgrade"}
     </Button>
   );
 }
