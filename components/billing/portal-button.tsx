@@ -4,6 +4,7 @@ import { billingService, BillingNotEnabledError } from "@/lib/billing";
 import { Button } from "@/components/ui/button";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface PortalButtonProps {
   children?: React.ReactNode;
@@ -46,7 +47,8 @@ export function PortalButton({ children, className, variant = "outline" }: Porta
       variant={variant}
       aria-busy={isPending}
     >
-      {isPending ? "Loading…" : children || "Manage Billing"}
+      {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {children || "Manage Billing"}
     </Button>
   );
 }

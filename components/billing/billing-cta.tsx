@@ -4,6 +4,7 @@ import { billingService, BillingNotEnabledError } from "@/lib/billing";
 import { Button } from "@/components/ui/button";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface BillingCTAProps {
   planId: string; // This should be the Product ID from your billing provider
@@ -56,7 +57,8 @@ export function BillingCTA({ planId, children, className, variant = "default", w
       variant={variant}
       aria-busy={isPending}
     >
-      {isPending ? "Loading…" : children || "Upgrade"}
+      {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {children || "Upgrade"}
     </Button>
   );
 }

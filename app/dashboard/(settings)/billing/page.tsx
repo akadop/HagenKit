@@ -32,6 +32,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { BillingSkeleton } from "@/components/billing/billing-skeleton";
 
 export default function BillingPage() {
   const { data: session, isPending: sessionLoading } = authClient.useSession();
@@ -150,16 +151,7 @@ export default function BillingPage() {
 
   // State 0: Session still loading (prevents flicker)
   if (sessionLoading) {
-    return (
-      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Billing</h1>
-            <p className="text-muted-foreground mt-1">Loading…</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <BillingSkeleton />;
   }
 
   // State 1: Not signed in
@@ -351,16 +343,7 @@ export default function BillingPage() {
 
   // State 6: Loading
   if (loading) {
-    return (
-      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Billing</h1>
-            <p className="text-muted-foreground mt-1">Loading billing information…</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <BillingSkeleton />;
   }
 
   const activeSubscription = subscriptions.find(
