@@ -39,7 +39,34 @@ HagenKit is a batteries-included SaaS boilerplate that combines modern product d
 
 ## Installation
 
-Clone the repository and install dependencies:
+### Quick Start (Recommended)
+
+If HagenKit is already deployed to Vercel, this is the fastest way to get started:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/codehagen/hagenkit.git
+cd hagenkit
+
+# 2. Pull environment variables from Vercel
+vercel env pull
+
+# 3. Copy env file to project root
+cp .vercel/.env.development.local .env.local
+
+# 4. Install dependencies and sync database
+pnpm hagenkit
+```
+
+That's it! Start the development server:
+
+```bash
+pnpm dev
+```
+
+### Manual Setup
+
+If you're setting up a new project from scratch:
 
 ```bash
 git clone https://github.com/your-org/hagenkit.git
@@ -47,7 +74,7 @@ cd hagenkit
 pnpm install
 ```
 
-Set up environment variables:
+Copy the example environment file:
 
 ```bash
 cp .env.example .env.local
@@ -73,6 +100,10 @@ Start the development server with Turbopack:
 pnpm dev
 ```
 
+### Useful Commands
+
+- `pnpm hagenkit` – install dependencies and sync database schema.
+- `pnpm dev` – start development server with Turbopack.
 - `pnpm email` – launch the React Email preview server.
 - `pnpm lint` – run ESLint with the project config.
 
