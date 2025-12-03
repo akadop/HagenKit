@@ -52,7 +52,7 @@ cd hagenkit
 vercel env pull
 
 # 3. Copy env file to project root
-cp .vercel/.env.development.local .env.local
+cp .vercel/.env.development.local .env
 
 # 4. Install dependencies and sync database
 pnpm hagenkit
