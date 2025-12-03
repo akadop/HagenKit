@@ -110,7 +110,64 @@ model Workspace {
   sessions    Session[]
   defaultForUsers User[] @relation("UserDefaultWorkspace")
 
+  // Billing
+  polarCustomerId  String?
+  stripeCustomerId String?
+  subscriptionId   String?
+  subscriptionStatus String? // active, past_due, canceled, etc.
+
+  // Polar OAuth Integration
+  polarIntegration PolarIntegration?
+
   @@map("workspace")
+}
+
+// Polar OAuth Integration - stores tokens and provisioning state per workspace
+model PolarIntegration {
+  id          String   @id @default(cuid())
+  workspaceId String   @unique
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // OAuth tokens (encrypted at rest)
+  accessToken      String
+  refreshToken     String?
+  tokenExpiresAt   DateTime?
+
+  // Polar organization info
+  polarOrgId       String
+  polarOrgSlug     String?
+  polarOrgName     String?
+
+  // Provisioning state
+  provisionedAt    DateTime?
+  webhookEndpointId String?
+  webhookSecret    String?   // Encrypted
+
+  // Environment: sandbox or production
+  environment      String    @default("sandbox")
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Product mappings
+  productMappings  PolarProductMapping[]
+
+  @@map("polar_integration")
+}
+
+// Maps local plan IDs to Polar product IDs
+model PolarProductMapping {
+  id             String           @id @default(cuid())
+  integrationId  String
+  integration    PolarIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  planId         String   // Local plan ID from config/plans.ts (e.g., "pro-monthly")
+  polarProductId String   // Polar's UUID
+
+  createdAt      DateTime @default(now())
+
+  @@unique([integrationId, planId])
+  @@map("polar_product_mapping")
 }
 
 // Junction table for user-workspace relationship

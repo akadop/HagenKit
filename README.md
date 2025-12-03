@@ -131,6 +131,12 @@ HagenKit automatically assigns the `admin` role to the **first user** who signs 
 - **React Email** templates in `emails/` ready for transactional flows.
 - **Resend** integration glue for real email delivery.
 
+### Billing & Payments
+- **Polar Integration** – Built-in support for payments via `@polar-sh/better-auth` plugin with automatic customer creation, checkout flows, and webhook handling.
+- **Ready for Stripe** – Extensible billing abstraction layer for future payment providers.
+- **Subscription Management** – Customer portal, subscription status checks, and usage-based billing support.
+- **[Billing Integration Guide](docs/billing-integration-guide.md)** – Complete setup instructions and configuration details.
+
 ## Architecture
 
 HagenKit separates concerns to keep features composable and scalable:

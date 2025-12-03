@@ -16,6 +16,7 @@ import {
   IconReport,
   IconSearch,
   IconSettings,
+  IconSparkles,
   IconUsers,
 } from "@tabler/icons-react";
 import type { SidebarUser } from "@/types/user";
@@ -117,6 +118,11 @@ const data = {
     },
   ],
   navSecondary: [
+    {
+      title: "Upgrade",
+      url: "/dashboard/billing",
+      icon: IconSparkles,
+    },
     {
       title: "Settings",
       url: "/dashboard/settings",
